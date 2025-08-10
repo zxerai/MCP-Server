@@ -241,49 +241,13 @@ See the included `nginx.conf` file for a complete configuration example.
 - **Reverse Proxy**: Nginx (optional)
 - **Caching**: Redis (optional)
 
-## 📚 Documentation
 
-For detailed documentation, please refer to:
 
-- [Docker Deployment Guide](DOCKER.md) - Complete containerization guide
-- [Configuration Reference](docs/configuration/) - Detailed configuration options
-- [API Documentation](docs/api-reference/) - REST API and SSE endpoint reference
-- [Development Guide](docs/development/) - Local development setup
-
-## 👥 Contributing
-
-We welcome contributions of all kinds:
-
-- ✨ New features & optimizations
-- 📝 Documentation improvements
-- 🐛 Bug reports & fixes
-- 🌐 Translations & suggestions
-- 🎨 UI/UX improvements
-
-Please read our [Contributing Guide](docs/development/contributing.mdx) before submitting pull requests.
 
 ## 🆘 Support & Community
 
 - 💬 [Discord Community](https://discord.gg/qMKNsn5Q) - Join for discussions and support
 - 🐛 [GitHub Issues](https://github.com/zxerai/MCP-Server/issues) - Report bugs or request features
-- 📧 [Email Support](mailto:support@mcpserver.dev) - Direct support contact
-
-## ❤️ Sponsor
-
-If you find this project helpful, please consider supporting its development:
-
-[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/samanhappy)
-
-## 🌟 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=zxerai/MCP-Server&type=Date)](https://www.star-history.com/#zxerai/MCP-Server&Date)
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE) - see the LICENSE file for details.
-
----
-
 **⭐ Star this repository if you find it helpful!**
 
 Made with ❤️ by the MCP Server Dashboard team.
