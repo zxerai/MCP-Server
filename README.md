@@ -241,13 +241,6 @@ See the included `nginx.conf` file for a complete configuration example.
 - **Reverse Proxy**: Nginx (optional)
 - **Caching**: Redis (optional)
 
-
-
-
-## 🆘 Support & Community
-
-- 💬 [Discord Community](https://discord.gg/qMKNsn5Q) - Join for discussions and support
-- 🐛 [GitHub Issues](https://github.com/zxerai/MCP-Server/issues) - Report bugs or request features
 **⭐ Star this repository if you find it helpful!**
 
 Made with ❤️ by the MCP Server Dashboard team.
