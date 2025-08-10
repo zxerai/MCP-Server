@@ -1,0 +1,114 @@
+# MCPHub Docker 构建忽略文件
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
+
+# 构建输出
+dist/
+frontend/dist/
+build/
+*.tsbuildinfo
+
+# 开发文件
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+mcp_settings.dev.json
+
+# IDE 和编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# 测试和覆盖率
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+
+# 日志文件
+logs/
+*.log
+
+# 临时文件
+tmp/
+temp/
+.tmp/
+
+# Docker 相关
+Dockerfile*
+docker-compose*.yml
+.dockerignore
+
+# 文档和示例
+README*.md
+docs/
+examples/
+articals/
+assets/
+*.png
+*.jpg
+*.gif
+*.svg
+*.ico
+
+# 测试文件
+tests/
+test/
+*.test.ts
+*.test.js
+*.spec.ts
+*.spec.js
+__tests__/
+
+# 配置文件
+jest.config.*
+.eslintrc.*
+.prettierrc.*
+tsconfig.test.json
+
+# 部署和 CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+Jenkinsfile
+heroku.yml
+
+# Python 相关
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 其他
+*.tar.gz
+*.zip
+*.rar
+.cache/
+.parcel-cache/

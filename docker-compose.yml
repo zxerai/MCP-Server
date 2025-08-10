@@ -1,0 +1,116 @@
+# MCPHub v1.0.0 Docker Compose 配置
+version: '3.8'
+
+services:
+  mcphub:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - HTTP_PROXY=${HTTP_PROXY:-}
+        - HTTPS_PROXY=${HTTPS_PROXY:-}
+        - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-60000}
+        - BASE_PATH=${BASE_PATH:-}
+        - READONLY=${READONLY:-false}
+        - INSTALL_EXT=${INSTALL_EXT:-false}
+    image: mcphub:1.0.0
+    container_name: mcphub
+    restart: unless-stopped
+    ports:
+      - "${MCPHUB_PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-60000}
+      - BASE_PATH=${BASE_PATH:-}
+      - READONLY=${READONLY:-false}
+      - HTTP_PROXY=${HTTP_PROXY:-}
+      - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - NPM_REGISTRY=${NPM_REGISTRY:-https://registry.npmjs.org/}
+    volumes:
+      # 持久化配置文件
+      - ./mcp_settings.json:/app/mcp_settings.json:ro
+      - ./servers.json:/app/servers.json:ro
+      # 持久化日志
+      - mcphub_logs:/app/logs
+      # 可选：挂载自定义配置目录
+      - ${CONFIG_DIR:-./config}:/app/config:ro
+    networks:
+      - mcphub_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    # 资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '0.5'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+
+  # 可选：Nginx 反向代理
+  nginx:
+    image: nginx:alpine
+    container_name: mcphub_nginx
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-80}:80"
+      - "${NGINX_SSL_PORT:-443}:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${SSL_CERT_DIR:-./ssl}:/etc/nginx/ssl:ro
+    networks:
+      - mcphub_network
+    depends_on:
+      - mcphub
+    profiles:
+      - nginx
+
+  # 可选：Redis 缓存
+  redis:
+    image: redis:7-alpine
+    container_name: mcphub_redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-mcphub123}
+    networks:
+      - mcphub_network
+    profiles:
+      - redis
+
+  # 可选：PostgreSQL 数据库
+  postgres:
+    image: postgres:15-alpine
+    container_name: mcphub_postgres
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-mcphub}
+      - POSTGRES_USER=${POSTGRES_USER:-mcphub}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mcphub123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - mcphub_network
+    profiles:
+      - postgres
+
+volumes:
+  mcphub_logs:
+    driver: local
+  redis_data:
+    driver: local
+  postgres_data:
+    driver: local
+
+networks:
+  mcphub_network:
+    driver: bridge

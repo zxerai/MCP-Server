@@ -1,0 +1,116 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "MCPHub Documentation",
+  "description": "The Unified Hub for Model Context Protocol (MCP) Servers",
+  "colors": {
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
+  },
+  "favicon": "/favicon.ico",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "English",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "index",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Features",
+            "pages": [
+              "features/server-management",
+              "features/group-management",
+              "features/smart-routing"
+            ]
+          },
+          {
+            "group": "Configuration",
+            "pages": [
+              "configuration/mcp-settings",
+              "configuration/docker-setup",
+              "configuration/nginx"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "中文",
+        "groups": [
+          {
+            "group": "开始使用",
+            "pages": [
+              "zh/index",
+              "zh/quickstart",
+              "zh/installation"
+            ]
+          },
+          {
+            "group": "核心功能",
+            "pages": [
+              "zh/features/server-management",
+              "zh/features/group-management",
+              "zh/features/smart-routing"
+            ]
+          },
+          {
+            "group": "配置指南",
+            "pages": [
+              "zh/configuration/mcp-settings",
+              "zh/configuration/docker-setup",
+              "zh/configuration/nginx"
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/samanhappy/mcphub",
+          "icon": "github"
+        },
+        {
+          "anchor": "Discord",
+          "href": "https://discord.gg/qMKNsn5Q",
+          "icon": "discord"
+        },
+        {
+          "anchor": "Sponsor",
+          "href": "https://ko-fi.com/samanhappy",
+          "icon": "heart"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Demo",
+        "href": "https://demo.mcphubx.com"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Get Started",
+      "href": "https://docs.mcphubx.com/quickstart"
+    }
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/samanhappy/mcphub",
+      "discord": "https://discord.gg/qMKNsn5Q"
+    }
+  }
+}
