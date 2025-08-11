@@ -88,7 +88,7 @@ export class TestServerHelper {
    */
   private async setupTemporaryConfig(settings: McpSettings): Promise<void> {
     // Store original path if it exists
-    this.originalConfigPath = process.env.MCPHUB_SETTING_PATH || null;
+    this.originalConfigPath = process.env.MCPSERVER_SETTING_PATH || null;
 
     const configDir = path.join(process.cwd(), 'temp-test-config');
 
@@ -103,7 +103,7 @@ export class TestServerHelper {
     fs.writeFileSync(this.testConfigPath, JSON.stringify(settings, null, 2));
 
     // Override the settings path for the test
-    process.env.MCPHUB_SETTING_PATH = this.testConfigPath;
+    process.env.MCPSERVER_SETTING_PATH = this.testConfigPath;
 
     // Clear settings cache to force re-reading from the new config file
     clearSettingsCache();
@@ -129,9 +129,9 @@ export class TestServerHelper {
 
     // Reset environment variable
     if (this.originalConfigPath !== null) {
-      process.env.MCPHUB_SETTING_PATH = this.originalConfigPath;
+      process.env.MCPSERVER_SETTING_PATH = this.originalConfigPath;
     } else {
-      delete process.env.MCPHUB_SETTING_PATH;
+      delete process.env.MCPSERVER_SETTING_PATH;
     }
 
     this.testConfigPath = null;

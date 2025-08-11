@@ -12,11 +12,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Start with more debug information
-console.log('📋 MCPHub CLI');
+console.log('📋 MCP Server CLI');
 console.log(`📁 CLI script location: ${__dirname}`);
 
 // The npm package directory structure when installed is:
-// node_modules/@samanhappy/mcphub/
+// node_modules/@zxerai/mcp-server/
 //   - dist/
 //   - bin/
 //   - frontend/dist/
@@ -48,7 +48,7 @@ function findPackageRoot() {
     if (fs.existsSync(packageJsonPath)) {
       try {
         const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-        if (pkg.name === 'mcphub' || pkg.name === '@samanhappy/mcphub' || pkg.name === '@zxerai/mcp-server') {
+        if (pkg.name === 'mcpserver' || pkg.name === '@zxerai/mcp-server') {
           if (isDebug) {
             console.log(`DEBUG: Found package.json at ${packageJsonPath}`);
           }
@@ -89,8 +89,8 @@ console.log(`📦 Using package root: ${projectRoot}`);
 checkFrontend(projectRoot);
 
 // Start the server
-console.log('🚀 Starting MCPHub server...');
+console.log('🚀 Starting MCP Server...');
 import(path.join(projectRoot, 'dist', 'index.js')).catch(err => {
-  console.error('Failed to start MCPHub:', err);
+  console.error('Failed to start MCP Server:', err);
   process.exit(1);
 });

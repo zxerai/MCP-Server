@@ -35,7 +35,7 @@ export const callTool = async (
       },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('mcphub_token')}`, // Add bearer auth for MCP routing
+          Authorization: `Bearer ${localStorage.getItem('mcpserver_token')}`, // Add bearer auth for MCP routing
         },
       },
     );
@@ -74,7 +74,7 @@ export const toggleTool = async (
       { enabled },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('mcphub_token')}`,
+          Authorization: `Bearer ${localStorage.getItem('mcpserver_token')}`,
         },
       },
     );
@@ -106,7 +106,7 @@ export const updateToolDescription = async (
       { description },
       {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem('mcphub_token')}`,
+          Authorization: `Bearer ${localStorage.getItem('mcpserver_token')}`,
         },
       },
     );

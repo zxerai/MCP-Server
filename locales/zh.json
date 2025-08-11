@@ -468,10 +468,10 @@
     "mcpRouterApiKeyPlaceholder": "请输入 MCPRouter API 密钥",
     "mcpRouterReferer": "引用地址",
     "mcpRouterRefererDescription": "MCPRouter API 请求的引用地址头",
-    "mcpRouterRefererPlaceholder": "https://mcphub.app",
+            "mcpRouterRefererPlaceholder": "https://mcpserver.app",
     "mcpRouterTitle": "标题",
     "mcpRouterTitleDescription": "MCPRouter API 请求的标题头",
-    "mcpRouterTitlePlaceholder": "MCPHub",
+            "mcpRouterTitlePlaceholder": "MCP Server",
     "mcpRouterBaseUrl": "基础地址",
     "mcpRouterBaseUrlDescription": "MCPRouter API 的基础地址",
     "mcpRouterBaseUrlPlaceholder": "https://api.mcprouter.to/v1"

@@ -1,5 +1,5 @@
 // Test script to verify OpenAPI schema support
-// Run this in the MCPHub project directory with: tsx test-openapi-schema.ts
+// Run this in the MCP Server project directory with: tsx test-openapi-schema.ts
 
 import { OpenAPIClient } from './src/clients/openapi.js';
 import type { ServerConfig } from './src/types/index.js';

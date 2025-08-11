@@ -135,7 +135,7 @@ export class AppServer {
       this.app.get(rootPath, (_req, res) => {
         res
           .status(404)
-          .send('Frontend not found. MCPHub API is running, but the UI is not available.');
+          .send('Frontend not found. MCP Server API is running, but the UI is not available.');
       });
     }
   }
@@ -144,10 +144,10 @@ export class AppServer {
     this.app.listen(this.port, () => {
       console.log(`Server is running on port ${this.port}`);
       if (this.frontendPath) {
-        console.log(`Open http://localhost:${this.port} in your browser to access MCPHub UI`);
+        console.log(`Open http://localhost:${this.port} in your browser to access MCP Server UI`);
       } else {
         console.log(
-          `MCPHub API is running on http://localhost:${this.port}, but the UI is not available`,
+          `MCP Server API is running on http://localhost:${this.port}, but the UI is not available`,
         );
       }
     });
@@ -232,7 +232,7 @@ export class AppServer {
       if (fs.existsSync(packageJsonPath)) {
         try {
           const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
-          if (pkg.name === 'mcphub' || pkg.name === '@samanhappy/mcphub' || pkg.name === '@zxerai/mcp-server') {
+          if (pkg.name === 'mcpserver' || pkg.name === '@zxerai/mcp-server') {
             if (debug) {
               console.log(`DEBUG: Found package.json at ${packageJsonPath}`);
             }

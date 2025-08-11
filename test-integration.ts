@@ -1,4 +1,4 @@
-// Comprehensive test for OpenAPI server support in MCPHub
+// Comprehensive test for OpenAPI server support in MCP Server
 // This test verifies the complete integration including types, client, and service
 
 import { OpenAPIClient } from './src/clients/openapi.js';
@@ -6,7 +6,7 @@ import { addServer, removeServer, getServersInfo } from './src/services/mcpServi
 import type { ServerConfig } from './src/types/index.js';
 
 async function testOpenAPIIntegration() {
-  console.log('🧪 Testing OpenAPI Integration in MCPHub\n');
+  console.log('🧪 Testing OpenAPI Integration in MCP Server\n');
 
   // Test 1: OpenAPI Type System
   console.log('1️⃣ Testing OpenAPI Type System...');

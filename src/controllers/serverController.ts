@@ -563,8 +563,8 @@ export const updateSystemConfig = (req: Request, res: Response): void => {
         },
         mcpRouter: {
           apiKey: '',
-          referer: 'https://mcphub.app',
-          title: 'MCPHub',
+                  referer: 'https://mcpserver.app',
+        title: 'MCP Server',
           baseUrl: 'https://api.mcprouter.to/v1',
         },
       };
@@ -601,8 +601,8 @@ export const updateSystemConfig = (req: Request, res: Response): void => {
     if (!settings.systemConfig.mcpRouter) {
       settings.systemConfig.mcpRouter = {
         apiKey: '',
-        referer: 'https://mcphub.app',
-        title: 'MCPHub',
+        referer: 'https://mcpserver.app',
+        title: 'MCP Server',
         baseUrl: 'https://api.mcprouter.to/v1',
       };
     }

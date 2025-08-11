@@ -1,5 +1,5 @@
 // Test script to verify OpenAPI server functionality
-// Run this in the MCPHub project directory with: tsx test-openapi.ts
+// Run this in the MCP Server project directory with: tsx test-openapi.ts
 
 import { OpenAPIClient } from './src/clients/openapi.js';
 import type { ServerConfig } from './src/types/index.js';

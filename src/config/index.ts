@@ -14,7 +14,7 @@ const defaultConfig = {
   timeout: process.env.REQUEST_TIMEOUT || 60000,
   basePath: process.env.BASE_PATH || '',
   readonly: 'true' === process.env.READONLY || false,
-  mcpHubName: 'mcphub',
+  mcpHubName: 'mcpserver',
   mcpHubVersion: getPackageVersion(),
 };
 

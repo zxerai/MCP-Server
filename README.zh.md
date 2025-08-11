@@ -98,7 +98,7 @@ http://localhost:3000/mcp
 
 **智能路由（实验性功能）**：
 
-智能路由是 MCPHub 的智能工具发现系统，使用向量语义搜索自动为任何给定任务找到最相关的工具。
+智能路由是 MCP Server 的智能工具发现系统，使用向量语义搜索自动为任何给定任务找到最相关的工具。
 
 ```
 http://localhost:3000/mcp/$smart
@@ -119,7 +119,7 @@ http://localhost:3000/mcp/$smart
 
 - 支持 pgvector 扩展的 PostgreSQL
 - OpenAI API 密钥（或兼容的嵌入服务）
-- 在 MCPHub 设置中启用智能路由
+- 在 MCP Server 设置中启用智能路由
 
 **基于分组的 HTTP 端点（推荐）**：
 ![分组](assets/group.zh.png)
@@ -178,7 +178,7 @@ http://localhost:3000/sse/{server}
 
 ```bash
 git clone https://github.com/zxerai/MCP-Server.git
-cd mcphub
+cd MCP-Server
 pnpm install
 pnpm dev
 ```
@@ -191,7 +191,7 @@ pnpm dev
 
 ### 使用 nginx 反向代理
 
-如果您在使用 nginx 反向代理 MCPHub，请确保在 nginx 配置中添加以下内容：
+如果您在使用 nginx 反向代理 MCP Server，请确保在 nginx 配置中添加以下内容：
 
 ```nginx
 proxy_buffering off

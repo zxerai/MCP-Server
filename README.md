@@ -221,7 +221,7 @@ See the included `nginx.conf` file for a complete configuration example.
 
 ### Docker Deployment Issues
 
-- **Port Conflicts**: If port 3000 is already in use, modify the `MCPHUB_PORT` environment variable
+- **Port Conflicts**: If port 3000 is already in use, modify the `MCPSERVER_PORT` environment variable
 - **Permission Issues**: Ensure Docker has proper permissions to access mounted volumes
 - **Memory Limits**: Adjust Docker memory limits if experiencing performance issues
 

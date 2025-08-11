@@ -12,7 +12,7 @@ const rootDir = process.cwd();
  * @returns The path to the file
  */
 export const getConfigFilePath = (filename: string, description = 'Configuration'): string => {
-  const envPath = process.env.MCPHUB_SETTING_PATH;
+  const envPath = process.env.MCPSERVER_SETTING_PATH;
   const potentialPaths = [
     ...(envPath ? [envPath] : []),
     // Prioritize process.cwd() as the first location to check

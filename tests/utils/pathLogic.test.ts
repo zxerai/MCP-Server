@@ -9,12 +9,12 @@ const mockFs = fs as jest.Mocked<typeof fs>;
 describe('Path Utilities Logic', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    delete process.env.MCPHUB_SETTING_PATH;
+    delete process.env.MCPSERVER_SETTING_PATH;
   });
 
   // Test the core logic of path resolution
   const findConfigFile = (filename: string): string => {
-    const envPath = process.env.MCPHUB_SETTING_PATH;
+    const envPath = process.env.MCPSERVER_SETTING_PATH;
     const potentialPaths = [
       ...(envPath ? [envPath] : []),
       path.resolve(process.cwd(), filename),
@@ -48,7 +48,7 @@ describe('Path Utilities Logic', () => {
     it('should prioritize environment variable path', () => {
       const filename = 'test-config.json';
       const envPath = '/custom/path/test-config.json';
-      process.env.MCPHUB_SETTING_PATH = envPath;
+      process.env.MCPSERVER_SETTING_PATH = envPath;
       
       mockFs.existsSync.mockImplementation((filePath) => {
         return filePath === envPath;

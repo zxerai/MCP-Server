@@ -1,7 +1,7 @@
 import { addInterceptor, removeInterceptor, type FetchInterceptor } from './fetchInterceptor';
 
 // Token key in localStorage
-const TOKEN_KEY = 'mcphub_token';
+const TOKEN_KEY = 'mcpserver_token';
 
 // Get token from localStorage
 export const getToken = (): string | null => {

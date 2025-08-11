@@ -9,7 +9,7 @@ export interface RuntimeConfig {
 // Extend Window interface to include runtime config
 declare global {
   interface Window {
-    __MCPHUB_CONFIG__?: RuntimeConfig;
+    __MCPSERVER_CONFIG__?: RuntimeConfig;
   }
 }
 

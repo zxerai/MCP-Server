@@ -62,8 +62,8 @@
     },
     "mcpRouter": {
       "apiKey": "",
-      "referer": "https://mcphub.app",
-      "title": "MCPHub",
+          "referer": "https://mcpserver.app",
+    "title": "MCP Server",
       "baseUrl": "https://api.mcprouter.to/v1"
     }
   }

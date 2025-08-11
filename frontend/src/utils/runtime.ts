@@ -5,10 +5,10 @@ import type { RuntimeConfig } from '../types/runtime';
  */
 export const getRuntimeConfig = (): RuntimeConfig => {
   return (
-    window.__MCPHUB_CONFIG__ || {
+    window.__MCPSERVER_CONFIG__ || {
       basePath: '',
       version: 'dev',
-      name: 'mcphub',
+      name: 'mcpserver',
       readonly: false,
     }
   );
@@ -101,7 +101,7 @@ export const loadRuntimeConfig = async (): Promise<RuntimeConfig> => {
     return {
       basePath: '',
       version: 'dev',
-      name: 'mcphub',
+      name: 'mcpserver',
       readonly: false,
     };
   } catch (error) {
@@ -109,7 +109,7 @@ export const loadRuntimeConfig = async (): Promise<RuntimeConfig> => {
     return {
       basePath: '',
       version: 'dev',
-      name: 'mcphub',
+      name: 'mcpserver',
       readonly: false,
     };
   }
