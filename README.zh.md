@@ -57,13 +57,13 @@ MCP-Server 通过将多个 MCP（Model Context Protocol）服务器组织为灵�
 **推荐**：挂载自定义配置：
 
 ```bash
-docker run -p 3000:3000 -v ./mcp_settings.json:/app/mcp_settings.json -v ./data:/app/data samanhappy/mcphub
+docker run -p 3000:3000 -v ./mcp_settings.json:/app/mcp_settings.json -v ./data:/app/data zxerai/mcp-server
 ```
 
 或使用默认配置运行：
 
 ```bash
-docker run -p 3000:3000 samanhappy/mcphub
+docker run -p 3000:3000 zxerai/mcp-server
 ```
 
 ### 访问控制台
@@ -177,7 +177,7 @@ http://localhost:3000/sse/{server}
 ## 🧑‍💻 本地开发
 
 ```bash
-git clone https://github.com/samanhappy/mcphub.git
+git clone https://github.com/zxerai/MCP-Server.git
 cd mcphub
 pnpm install
 pnpm dev

@@ -1,5 +1,5 @@
 {
-  "name": "@samanhappy/mcphub",
+  "name": "@zxerai/mcp-server",
   "version": "1.0.0",
   "description": "A hub server for mcp servers",
   "main": "dist/index.js",

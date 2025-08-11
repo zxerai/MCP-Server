@@ -50,7 +50,7 @@ const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
           </div>
 
           <a
-            href="https://github.com/samanhappy/mcphub"
+            href="https://github.com/zxerai/MCP-Server"
             target="_blank"
             rel="noopener noreferrer"
             className="group p-2.5 rounded-xl text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/60 dark:hover:bg-gray-800/60 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20"

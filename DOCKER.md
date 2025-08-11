@@ -302,7 +302,7 @@ docker-compose up -d
 1. 查看日志：`docker-compose logs -f`
 2. 检查健康状态：`docker-compose ps`
 3. 验证配置：`docker-compose config`
-4. 提交 Issue：[GitHub Issues](https://github.com/samanhappy/mcphub/issues)
+4. 提交 Issue：[GitHub Issues](https://github.com/zxerai/MCP-Server/issues)
 
 ---
 
