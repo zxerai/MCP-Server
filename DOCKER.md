@@ -1,312 +1,427 @@
-# MCPHub v1.0.0 Docker 部署指南
+# MCP Server v1.0.0 Docker 部署指南
 
-MCPHub 提供了完整的 Docker 容器化部署方案，支持生产环境和开发环境的快速部署。
+## 概述
 
-## 📦 部署文件说明
+MCP Server 提供了完整的 Docker 部署解决方案，支持生产环境和开发环境，包含监控、数据库、缓存等可选服务。
 
-### 核心文件
-- `Dockerfile` - 生产环境多阶段构建
-- `Dockerfile.dev` - 开发环境构建
-- `docker-compose.yml` - 生产环境编排
-- `docker-compose.dev.yml` - 开发环境编排
-- `.dockerignore` - Docker 构建忽略文件
-- `nginx.conf` - Nginx 反向代理配置
-- `.env.example` - 环境变量配置示例
+## 快速开始
 
-## 🚀 快速开始
+### 1. 环境准备
 
-### 1. 准备环境变量
+确保系统已安装：
+- Docker 20.10+
+- Docker Compose 2.0+
+
+### 2. 克隆项目
+
+```bash
+git clone https://github.com/zxerai/MCP-Server.git
+cd MCP-Server
+```
+
+### 3. 配置环境变量
 
 ```bash
 # 复制环境变量模板
-cp .env.example .env
+cp env.example .env
 
-# 编辑环境变量（根据需要修改）
-vim .env
+# 根据需要修改 .env 文件
+nano .env
 ```
 
-### 2. 生产环境部署
+### 4. 快速部署
 
-#### 基础部署
 ```bash
-# 构建并启动服务
+# 使用部署脚本
+chmod +x deploy.sh
+./deploy.sh
+
+# 或手动部署
+docker-compose up -d
+```
+
+## 部署模式
+
+### 生产环境部署
+
+```bash
+# 基础部署（仅主应用）
 docker-compose up -d
 
-# 查看服务状态
-docker-compose ps
-
-# 查看日志
-docker-compose logs -f mcphub
-```
-
-#### 带 Nginx 反向代理
-```bash
-# 启用 Nginx 配置
+# 包含 Nginx 反向代理
 docker-compose --profile nginx up -d
 
-# 访问应用
-curl http://localhost
+# 包含数据库和缓存
+docker-compose --profile postgres --profile redis up -d
+
+# 包含完整监控
+docker-compose --profile monitoring up -d
+
+# 完整部署（所有服务）
+docker-compose --profile nginx --profile postgres --profile redis --profile monitoring up -d
 ```
 
-#### 完整部署（包含 Redis 和 PostgreSQL）
-```bash
-# 启动所有服务
-docker-compose --profile nginx --profile redis --profile postgres up -d
-```
-
-### 3. 开发环境部署
+### 开发环境部署
 
 ```bash
-# 使用开发环境配置
+# 开发环境（支持热重载）
 docker-compose -f docker-compose.dev.yml up -d
 
-# 访问应用
-# 后端: http://localhost:3000
-# 前端: http://localhost:5173
+# 包含开发数据库
+docker-compose -f docker-compose.dev.yml --profile postgres up -d
+
+# 包含开发监控
+docker-compose -f docker-compose.dev.yml --profile monitoring up -d
 ```
 
-## 🔧 配置选项
+## 服务配置
 
-### 环境变量
+### 核心服务
 
-| 变量名 | 默认值 | 说明 |
-|--------|--------|------|
-| `MCPHUB_PORT` | `3000` | MCPHub 服务端口 |
-| `FRONTEND_PORT` | `5173` | 前端开发服务器端口 |
-| `BASE_PATH` | `` | 基础路径（用于反向代理） |
-| `READONLY` | `false` | 只读模式 |
-| `REQUEST_TIMEOUT` | `60000` | 请求超时时间（毫秒） |
-| `HTTP_PROXY` | `` | HTTP 代理 |
-| `HTTPS_PROXY` | `` | HTTPS 代理 |
-| `INSTALL_EXT` | `false` | 是否安装扩展工具 |
+| 服务 | 端口 | 描述 | 必需 |
+|------|------|------|------|
+| mcpserver | 3000 | 主应用服务 | ✅ |
+| nginx | 80/443 | 反向代理 | ❌ |
+| redis | 6379 | 缓存服务 | ❌ |
+| postgres | 5432 | 数据库服务 | ❌ |
 
-### Docker Compose 配置文件
+### 监控服务
 
-#### 生产环境 (`docker-compose.yml`)
-- **mcphub**: 主应用服务
-- **nginx**: 反向代理（可选）
-- **redis**: 缓存服务（可选）
-- **postgres**: 数据库服务（可选）
+| 服务 | 端口 | 描述 | 必需 |
+|------|------|------|------|
+| prometheus | 9090 | 指标收集 | ❌ |
+| grafana | 3001 | 可视化面板 | ❌ |
 
-#### 开发环境 (`docker-compose.dev.yml`)
-- 支持热重载
-- 挂载源代码目录
-- 同时启动前后端服务
+### 开发服务
 
-## 🏗️ 构建选项
+| 服务 | 端口 | 描述 | 必需 |
+|------|------|------|------|
+| mcpserver-dev | 3000, 5173, 9229 | 开发环境 | ❌ |
+| postgres-dev | 5433 | 开发数据库 | ❌ |
+| redis-dev | 6380 | 开发缓存 | ❌ |
 
-### 构建参数
+## 环境变量配置
+
+### 基础配置
 
 ```bash
-# 自定义构建参数
-docker build \
-  --build-arg HTTP_PROXY=http://proxy.company.com:8080 \
-  --build-arg INSTALL_EXT=true \
-  -t mcphub:custom .
+# 应用配置
+NODE_ENV=production
+MCPSERVER_PORT=3000
+BASE_PATH=
+READONLY=false
+REQUEST_TIMEOUT=60000
+
+# 时区
+TZ=Asia/Shanghai
 ```
 
-### 多架构构建
+### 代理配置
 
 ```bash
-# 构建 ARM64 架构
-docker buildx build --platform linux/arm64 -t mcphub:arm64 .
-
-# 构建多架构镜像
-docker buildx build \
-  --platform linux/amd64,linux/arm64 \
-  -t mcphub:multiarch .
+# 代理设置
+HTTP_PROXY=
+HTTPS_PROXY=
+NPM_REGISTRY=https://registry.npmjs.org/
 ```
 
-## 📊 监控和维护
-
-### 健康检查
+### 服务端口
 
 ```bash
-# 检查服务健康状态
-docker-compose exec mcphub curl -f http://localhost:3000/api/health
+# Nginx
+NGINX_PORT=80
+NGINX_SSL_PORT=443
 
-# 查看健康检查日志
-docker inspect mcphub | jq '.[0].State.Health'
+# Redis
+REDIS_PORT=6379
+REDIS_PASSWORD=mcpserver123
+
+# PostgreSQL
+POSTGRES_PORT=5432
+POSTGRES_DB=mcpserver
+POSTGRES_USER=mcpserver
+POSTGRES_PASSWORD=mcpserver123
+
+# 监控
+PROMETHEUS_PORT=9090
+GRAFANA_PORT=3001
+GRAFANA_PASSWORD=admin123
 ```
 
-### 日志管理
+## 部署脚本使用
+
+### 基本用法
 
 ```bash
-# 查看实时日志
-docker-compose logs -f
+# 生产环境部署
+./deploy.sh
 
-# 查看特定服务日志
-docker-compose logs -f mcphub
+# 开发环境部署
+./deploy.sh -e development
 
-# 限制日志输出行数
-docker-compose logs --tail=100 mcphub
+# 强制重新构建
+./deploy.sh -f
+
+# 清理环境
+./deploy.sh -c
+
+# 显示状态
+./deploy.sh -s
+
+# 显示日志
+./deploy.sh -l
 ```
 
-### 数据备份
+### 高级用法
 
 ```bash
-# 备份配置文件
-docker cp mcphub:/app/mcp_settings.json ./backup/
+# 部署包含 Nginx
+./deploy.sh -p nginx
 
-# 备份数据库（如果使用 PostgreSQL）
-docker-compose exec postgres pg_dump -U mcphub mcphub > backup.sql
+# 部署包含监控
+./deploy.sh -p monitoring
+
+# 部署所有环境
+./deploy.sh -e all
+
+# 组合使用
+./deploy.sh -e production -p nginx -f
 ```
 
-## 🔒 安全配置
+## 监控配置
 
-### SSL/TLS 配置
+### Prometheus 配置
 
-1. 准备 SSL 证书：
-```bash
-mkdir -p ssl
-# 将证书文件放入 ssl 目录
-# cert.pem - 证书文件
-# key.pem - 私钥文件
+Prometheus 配置文件位于 `monitoring/prometheus.yml`，包含：
+
+- 应用指标收集
+- Nginx 状态监控
+- Redis 性能指标
+- PostgreSQL 数据库指标
+- 系统资源监控
+
+### Grafana 配置
+
+Grafana 自动配置：
+
+- 数据源：Prometheus
+- 仪表板：MCP Server 监控面板
+- 用户：admin / admin123
+
+## 性能优化
+
+### 资源限制
+
+```yaml
+deploy:
+  resources:
+    limits:
+      memory: 1G
+      cpus: '0.5'
+    reservations:
+      memory: 512M
+      cpus: '0.25'
 ```
 
-2. 启用 HTTPS：
-```bash
-# 编辑 nginx.conf，取消注释 HTTPS 服务器配置
-# 设置环境变量
-export SSL_CERT_DIR=./ssl
-export NGINX_SSL_PORT=443
+### 缓存策略
 
-# 重启服务
-docker-compose --profile nginx up -d
+- 静态文件：1年缓存
+- API 响应：根据内容类型
+- 数据库查询：Redis 缓存
+
+### 网络优化
+
+- Keep-alive 连接
+- 连接池管理
+- 负载均衡
+
+## 安全配置
+
+### 容器安全
+
+```yaml
+security_opt:
+  - no-new-privileges:true
+read_only: true  # Nginx
+tmpfs:
+  - /tmp:noexec,nosuid,size=100m
 ```
 
 ### 网络安全
 
-```bash
-# 创建自定义网络
-docker network create mcphub_secure --driver bridge
+- 内部网络隔离
+- 端口限制
+- 访问控制
 
-# 使用自定义网络
-docker-compose --profile nginx up -d
+### 数据安全
+
+- 非 root 用户运行
+- 文件权限控制
+- 敏感信息加密
+
+## 日志管理
+
+### 日志配置
+
+```yaml
+logging:
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
 ```
 
-## 🚨 故障排除
+### 日志位置
+
+- 应用日志：`/app/logs`
+- Nginx 日志：`/var/log/nginx`
+- 系统日志：PostgreSQL 表
+
+## 备份和恢复
+
+### 数据备份
+
+```bash
+# 数据库备份
+docker exec mcpserver_postgres pg_dump -U mcpserver mcpserver > backup.sql
+
+# 配置文件备份
+docker cp mcpserver:/app/mcp_settings.json ./backup/
+docker cp mcpserver:/app/servers.json ./backup/
+```
+
+### 数据恢复
+
+```bash
+# 数据库恢复
+docker exec -i mcpserver_postgres psql -U mcpserver mcpserver < backup.sql
+
+# 配置文件恢复
+docker cp ./backup/mcp_settings.json mcpserver:/app/
+docker cp ./backup/servers.json mcpserver:/app/
+```
+
+## 故障排除
 
 ### 常见问题
 
-#### 1. 端口冲突
-```bash
-# 检查端口占用
-netstat -tlnp | grep :3000
+1. **端口冲突**
+   ```bash
+   # 检查端口占用
+   netstat -tuln | grep :3000
+   
+   # 修改端口
+   export MCPSERVER_PORT=3001
+   ```
 
-# 修改端口
-export MCPHUB_PORT=3001
+2. **权限问题**
+   ```bash
+   # 修复文件权限
+   sudo chown -R $USER:$USER .
+   chmod +x deploy.sh
+   ```
+
+3. **内存不足**
+   ```bash
+   # 增加 Docker 内存限制
+   # 或减少服务资源限制
+   ```
+
+### 日志查看
+
+```bash
+# 查看所有服务日志
+docker-compose logs -f
+
+# 查看特定服务日志
+docker-compose logs -f mcpserver
+
+# 查看错误日志
+docker-compose logs --tail=100 | grep ERROR
+```
+
+### 健康检查
+
+```bash
+# 检查服务状态
+docker-compose ps
+
+# 检查健康状态
+curl http://localhost:3000/api/health
+
+# 检查 Nginx 状态
+curl http://localhost/health
+```
+
+## 扩展部署
+
+### 集群部署
+
+```bash
+# 创建 Swarm 集群
+docker swarm init
+
+# 部署到集群
+docker stack deploy -c docker-compose.yml mcpserver
+```
+
+### 多环境部署
+
+```bash
+# 生产环境
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+# 测试环境
+docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+```
+
+### 自定义镜像
+
+```bash
+# 构建自定义镜像
+docker build -t mcpserver:custom .
+
+# 使用自定义镜像
 docker-compose up -d
 ```
 
-#### 2. 内存不足
-```bash
-# 检查容器资源使用
-docker stats mcphub
+## 维护和更新
 
-# 调整内存限制（在 docker-compose.yml 中）
-deploy:
-  resources:
-    limits:
-      memory: 2G
-```
-
-#### 3. 网络连接问题
-```bash
-# 检查网络连接
-docker-compose exec mcphub curl -I http://localhost:3000
-
-# 重建网络
-docker-compose down
-docker network prune
-docker-compose up -d
-```
-
-### 调试模式
+### 定期维护
 
 ```bash
-# 以调试模式运行
-docker-compose -f docker-compose.dev.yml up
+# 清理未使用的资源
+docker system prune -f
 
-# 进入容器调试
-docker-compose exec mcphub sh
-
-# 查看环境变量
-docker-compose exec mcphub env
-```
-
-## 📈 性能优化
-
-### 容器优化
-
-1. **多阶段构建**: 减小镜像大小
-2. **依赖缓存**: 利用 Docker 层缓存
-3. **资源限制**: 合理设置内存和 CPU 限制
-
-### 网络优化
-
-1. **Nginx 缓存**: 启用静态文件缓存
-2. **Gzip 压缩**: 减少传输数据量
-3. **Keep-Alive**: 复用连接
-
-### 存储优化
-
-```bash
-# 清理未使用的镜像
-docker image prune -a
-
-# 清理未使用的卷
-docker volume prune
-
-# 查看磁盘使用情况
-docker system df
-```
-
-## 🔄 更新部署
-
-### 滚动更新
-
-```bash
-# 拉取最新镜像
+# 更新镜像
 docker-compose pull
-
-# 重新启动服务
 docker-compose up -d
 
-# 验证更新
-docker-compose exec mcphub curl -s http://localhost:3000/api/health
+# 备份数据
+./deploy.sh -c
 ```
 
-### 版本回滚
+### 版本升级
 
 ```bash
-# 使用特定版本
+# 停止服务
 docker-compose down
-docker tag mcphub:1.0.0 mcphub:latest
-docker-compose up -d
+
+# 拉取新版本
+git pull origin main
+
+# 重新部署
+./deploy.sh -f
 ```
 
-## 📝 最佳实践
+## 支持和反馈
 
-1. **环境隔离**: 生产、测试、开发环境分离
-2. **配置外化**: 使用环境变量和配置文件
-3. **日志管理**: 配置日志轮转和收集
-4. **监控告警**: 设置健康检查和监控
-5. **备份策略**: 定期备份配置和数据
-6. **安全更新**: 及时更新基础镜像和依赖
+如果在部署过程中遇到问题，请：
 
-## 🆘 支持
+1. 查看 [GitHub Issues](https://github.com/zxerai/MCP-Server/issues)
+2. 检查日志文件
+3. 提交详细的错误报告
 
-如果遇到问题，请：
+## 许可证
 
-1. 查看日志：`docker-compose logs -f`
-2. 检查健康状态：`docker-compose ps`
-3. 验证配置：`docker-compose config`
-4. 提交 Issue：[GitHub Issues](https://github.com/zxerai/MCP-Server/issues)
-
----
-
-更多信息请参考：
-- [MCPHub 官方文档](https://mcphub.sh)
-- [Docker 官方文档](https://docs.docker.com)
-- [Docker Compose 参考](https://docs.docker.com/compose/)
+本项目采用 MIT 许可证，详见 [LICENSE](LICENSE) 文件。

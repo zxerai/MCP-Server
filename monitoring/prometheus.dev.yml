@@ -1,0 +1,129 @@
+# MCP Server v1.0.0 开发环境 Prometheus 监控配置
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    monitor: 'mcpserver-dev'
+    environment: 'development'
+
+# 规则文件
+rule_files:
+  - "rules/*.yml"
+
+# 告警配置
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          # - alertmanager:9093
+
+# 抓取配置
+scrape_configs:
+  # 抓取自身
+  - job_name: 'prometheus-dev'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 15s
+
+  # MCP Server 开发环境指标
+  - job_name: 'mcpserver-dev'
+    static_configs:
+      - targets: ['mcpserver-dev:3000']
+    scrape_interval: 30s
+    metrics_path: '/api/metrics'
+    scrape_timeout: 10s
+    # 标签
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}'
+      - source_labels: [__address__]
+        target_label: service
+        regex: '([^:]+)'
+        replacement: 'mcpserver-dev'
+      - source_labels: [__address__]
+        target_label: environment
+        replacement: 'development'
+
+  # 开发环境数据库指标 (如果启用)
+  - job_name: 'postgres-dev'
+    static_configs:
+      - targets: ['mcpserver_postgres_dev:5432']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    # 标签
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}'
+      - source_labels: [__address__]
+        target_label: service
+        regex: '([^:]+)'
+        replacement: 'postgres-dev'
+      - source_labels: [__address__]
+        target_label: environment
+        replacement: 'development'
+
+  # 开发环境Redis指标 (如果启用)
+  - job_name: 'redis-dev'
+    static_configs:
+      - targets: ['mcpserver_redis_dev:6379']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    # 标签
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}'
+      - source_labels: [__address__]
+        target_label: service
+        regex: '([^:]+)'
+        replacement: 'redis-dev'
+      - source_labels: [__address__]
+        target_label: environment
+        replacement: 'development'
+
+  # Node Exporter 系统指标 (可选)
+  - job_name: 'node-exporter-dev'
+    static_configs:
+      - targets: ['localhost:9100']
+    scrape_interval: 30s
+    scrape_timeout: 10s
+    # 标签
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '([^:]+)(?::\d+)?'
+        replacement: '${1}'
+      - source_labels: [__address__]
+        target_label: service
+        regex: '([^:]+)'
+        replacement: 'node-exporter'
+      - source_labels: [__address__]
+        target_label: environment
+        replacement: 'development'
+
+# 开发环境特定配置
+# 更短的保留时间
+storage:
+  tsdb:
+    retention.time: 24h
+    retention.size: 1GB
+
+# 远程写入配置 (可选)
+# remote_write:
+#   - url: "http://remote-write-endpoint/api/v1/write"
+#     remote_timeout: 30s
+#     write_relabel_configs:
+#       - source_labels: [__name__]
+#         regex: '.*'
+#         action: keep
+
+# 远程读取配置 (可选)
+# remote_read:
+#   - url: "http://remote-read-endpoint/api/v1/read"
+#     remote_timeout: 30s
+#     read_recent: true

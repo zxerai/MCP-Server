@@ -1,114 +1,108 @@
-# MCPHub Docker 构建忽略文件
+# MCP Server v1.0.0 Docker 忽略文件
+# 优化构建效率，减少镜像大小
 
-# Node.js
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
+# 版本控制
+.git
+.gitignore
+.gitattributes
+
+# 依赖目录
+node_modules
+frontend/node_modules
+.pnpm-store
 .pnpm-debug.log*
 
-# 构建输出
-dist/
-frontend/dist/
-build/
-*.tsbuildinfo
+# 构建产物
+dist
+frontend/dist
+build
+frontend/build
+.next
+.nuxt
+.vuepress/dist
 
 # 开发文件
-.env
-.env.local
-.env.development
-.env.test
-.env.production
-mcp_settings.dev.json
-
-# IDE 和编辑器
-.vscode/
-.idea/
+.vscode
+.idea
 *.swp
 *.swo
 *~
 
-# 操作系统
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Git
-.git/
-.gitignore
-.gitattributes
-
-# 测试和覆盖率
-coverage/
-.nyc_output/
-*.lcov
-.jest/
+# 测试文件
+coverage
+.nyc_output
+.jest
+test-results
+playwright-report
+test-results.xml
 
 # 日志文件
-logs/
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-# 临时文件
-tmp/
-temp/
-.tmp/
+# 环境配置
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
 
-# Docker 相关
-Dockerfile*
-docker-compose*.yml
-.dockerignore
+# 系统文件
+.DS_Store
+Thumbs.db
+*.tmp
+*.temp
 
 # 文档和示例
-README*.md
-docs/
-examples/
-articals/
-assets/
-*.png
-*.jpg
-*.gif
-*.svg
-*.ico
-
-# 测试文件
-tests/
-test/
-*.test.ts
-*.test.js
-*.spec.ts
-*.spec.js
-__tests__/
+docs
+examples
+*.md
+LICENSE
+README*
 
 # 配置文件
-jest.config.*
-.eslintrc.*
-.prettierrc.*
-tsconfig.test.json
+.eslintrc*
+.prettierrc*
+.editorconfig
+.browserslistrc
+.babelrc*
+postcss.config.js
+tailwind.config.js
+vite.config.ts
+webpack.config.js
+rollup.config.js
 
-# 部署和 CI/CD
-.github/
-.gitlab-ci.yml
-.travis.yml
-Jenkinsfile
-heroku.yml
+# 包管理器
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.npmrc
+.yarnrc
 
-# Python 相关
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-pip-log.txt
-pip-delete-this-directory.txt
+# 监控和调试
+monitoring
+debug
+*.prof
+*.heapsnapshot
+
+# 临时文件
+tmp
+temp
+.cache
+.parcel-cache
+.eslintcache
 
 # 其他
-*.tar.gz
-*.zip
-*.rar
-.cache/
-.parcel-cache/
+articals
+.github
+scripts
+tests
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts

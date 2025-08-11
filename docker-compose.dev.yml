@@ -1,20 +1,37 @@
-# MCPHub v1.0.0 开发环境 Docker Compose 配置
+# MCP Server v1.0.0 开发环境 Docker Compose 配置
+# 开发环境配置，支持热重载和调试
 version: '3.8'
 
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "50m"
+    max-file: "5"
+
+x-healthcheck: &default-healthcheck
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+
 services:
-  mcphub-dev:
+  # 开发环境主服务
+  mcpserver-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
       args:
         - HTTP_PROXY=${HTTP_PROXY:-}
         - HTTPS_PROXY=${HTTPS_PROXY:-}
-    image: mcphub:dev
-    container_name: mcphub-dev
+        - NODE_ENV=development
+        - DEBUG=${DEBUG:-false}
+    image: mcpserver:dev
+    container_name: mcpserver-dev
     restart: unless-stopped
     ports:
-      - "${MCPHUB_PORT:-3000}:3000"
+      - "${MCPSERVER_PORT:-3000}:3000"
       - "${FRONTEND_PORT:-5173}:5173"
+      - "${DEBUG_PORT:-9229}:9229"
     environment:
       - NODE_ENV=development
       - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-60000}
@@ -22,24 +39,170 @@ services:
       - READONLY=${READONLY:-false}
       - HTTP_PROXY=${HTTP_PROXY:-}
       - HTTPS_PROXY=${HTTPS_PROXY:-}
+      - DEBUG=${DEBUG:-false}
+      - TZ=${TZ:-Asia/Shanghai}
+      - NPM_REGISTRY=${NPM_REGISTRY:-https://registry.npmjs.org/}
     volumes:
       # 挂载源代码以支持热重载
-      - ./src:/app/src
-      - ./frontend/src:/app/frontend/src
-      - ./mcp_settings.dev.json:/app/mcp_settings.json
-      - ./servers.json:/app/servers.json
-      - ./locales:/app/locales
+      - ./src:/app/src:delegated
+      - ./frontend/src:/app/frontend/src:delegated
+      - ./frontend/public:/app/frontend/public:delegated
+      - ./frontend/index.html:/app/frontend/index.html:delegated
+      - ./frontend/tailwind.config.js:/app/frontend/tailwind.config.js:delegated
+      - ./frontend/vite.config.ts:/app/frontend/vite.config.ts:delegated
+      - ./frontend/tsconfig.json:/app/frontend/tsconfig.json:delegated
+      - ./frontend/package.json:/app/frontend/package.json:delegated
+      - ./mcp_settings.dev.json:/app/mcp_settings.json:delegated
+      - ./servers.json:/app/servers.json:delegated
+      - ./locales:/app/locales:delegated
+      - ./bin:/app/bin:delegated
+      - ./package.json:/app/package.json:delegated
+      - ./pnpm-lock.yaml:/app/pnpm-lock.yaml:delegated
+      - ./pnpm-workspace.yaml:/app/pnpm-workspace.yaml:delegated
       # Node modules 卷以提高性能
       - node_modules:/app/node_modules
       - frontend_node_modules:/app/frontend/node_modules
+      # 开发工具配置
+      - ./.vscode:/app/.vscode:ro
+      - ./.eslintrc.json:/app/.eslintrc.json:ro
+      - ./.prettierrc:/app/.prettierrc:ro
+      - ./tsconfig.json:/app/tsconfig.json:ro
+      - ./tsconfig.test.json:/app/tsconfig.test.json:ro
+      - ./jest.config.cjs:/app/jest.config.cjs:ro
     networks:
-      - mcphub_dev_network
-    command: ["sh", "-c", "pnpm frontend:dev & pnpm backend:dev"]
+      - mcpserver_dev_network
+    command: >
+      sh -c "
+        echo 'Starting development environment...' &&
+        echo 'Installing dependencies...' &&
+        pnpm install &&
+        echo 'Starting frontend and backend in development mode...' &&
+        pnpm frontend:dev &
+        pnpm backend:dev &
+        wait
+      "
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+    logging: *default-logging
+    # 开发环境资源限制
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 1G
+          cpus: '0.5'
+    # 开发环境安全配置
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,size=200m
+      - /app/.cache:noexec,nosuid,size=100m
+
+  # 开发环境数据库 (可选)
+  postgres-dev:
+    image: postgres:15-alpine
+    container_name: mcpserver_postgres_dev
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_DEV_PORT:-5433}:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DEV_DB:-mcpserver_dev}
+      - POSTGRES_USER=${POSTGRES_DEV_USER:-mcpserver_dev}
+      - POSTGRES_PASSWORD=${POSTGRES_DEV_PASSWORD:-mcpserver_dev123}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --lc-collate=C --lc-ctype=C
+      - TZ=${TZ:-Asia/Shanghai}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+      - postgres_dev_logs:/var/log/postgresql
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    networks:
+      - mcpserver_dev_network
+    profiles:
+      - postgres
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_DEV_USER:-mcpserver_dev} -d ${POSTGRES_DEV_DB:-mcpserver_dev}"]
+    logging: *default-logging
+
+  # 开发环境Redis (可选)
+  redis-dev:
+    image: redis:7-alpine
+    container_name: mcpserver_redis_dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_DEV_PORT:-6380}:6379"
+    volumes:
+      - redis_dev_data:/data
+      - redis_dev_logs:/var/log/redis
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass ${REDIS_DEV_PASSWORD:-mcpserver_dev123}
+      --maxmemory 128mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
+    networks:
+      - mcpserver_dev_network
+    profiles:
+      - redis
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+    logging: *default-logging
+
+  # 开发环境监控 (可选)
+  prometheus-dev:
+    image: prom/prometheus:latest
+    container_name: mcpserver_prometheus_dev
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_DEV_PORT:-9091}:9090"
+    volumes:
+      - ./monitoring/prometheus.dev.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_dev_data:/prometheus
+    networks:
+      - mcpserver_dev_network
+    profiles:
+      - monitoring
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=24h'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+    logging: *default-logging
 
 volumes:
   node_modules:
+    driver: local
   frontend_node_modules:
+    driver: local
+  postgres_dev_data:
+    driver: local
+  postgres_dev_logs:
+    driver: local
+  redis_dev_data:
+    driver: local
+  redis_dev_logs:
+    driver: local
+  prometheus_dev_data:
+    driver: local
 
 networks:
-  mcphub_dev_network:
+  mcpserver_dev_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.21.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: mcpserver_dev_br0

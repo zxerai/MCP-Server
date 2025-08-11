@@ -1,8 +1,22 @@
-# MCPHub v1.0.0 Docker Compose 配置
+# MCP Server v1.0.0 Docker Compose 配置
+# 生产环境部署配置
 version: '3.8'
 
+x-logging: &default-logging
+  driver: "json-file"
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-healthcheck: &default-healthcheck
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 40s
+
 services:
-  mcphub:
+  # 主应用服务
+  mcpserver:
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,11 +27,12 @@ services:
         - BASE_PATH=${BASE_PATH:-}
         - READONLY=${READONLY:-false}
         - INSTALL_EXT=${INSTALL_EXT:-false}
-    image: mcphub:1.0.0
-    container_name: mcphub
+        - NODE_ENV=production
+    image: mcpserver:1.0.0
+    container_name: mcpserver
     restart: unless-stopped
     ports:
-      - "${MCPHUB_PORT:-3000}:3000"
+      - "${MCPSERVER_PORT:-3000}:3000"
     environment:
       - NODE_ENV=production
       - REQUEST_TIMEOUT=${REQUEST_TIMEOUT:-60000}
@@ -26,22 +41,23 @@ services:
       - HTTP_PROXY=${HTTP_PROXY:-}
       - HTTPS_PROXY=${HTTPS_PROXY:-}
       - NPM_REGISTRY=${NPM_REGISTRY:-https://registry.npmjs.org/}
+      - TZ=${TZ:-Asia/Shanghai}
     volumes:
       # 持久化配置文件
       - ./mcp_settings.json:/app/mcp_settings.json:ro
       - ./servers.json:/app/servers.json:ro
       # 持久化日志
-      - mcphub_logs:/app/logs
+      - mcpserver_logs:/app/logs
       # 可选：挂载自定义配置目录
       - ${CONFIG_DIR:-./config}:/app/config:ro
+      # 可选：挂载SSL证书
+      - ${SSL_CERT_DIR:-./ssl}:/app/ssl:ro
     networks:
-      - mcphub_network
+      - mcpserver_network
     healthcheck:
+      <<: *default-healthcheck
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
+    logging: *default-logging
     # 资源限制
     deploy:
       resources:
@@ -51,11 +67,17 @@ services:
         reservations:
           memory: 512M
           cpus: '0.25'
+    # 安全配置
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
 
-  # 可选：Nginx 反向代理
+  # Nginx 反向代理服务
   nginx:
     image: nginx:alpine
-    container_name: mcphub_nginx
+    container_name: mcpserver_nginx
     restart: unless-stopped
     ports:
       - "${NGINX_PORT:-80}:80"
@@ -63,54 +85,163 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ${SSL_CERT_DIR:-./ssl}:/etc/nginx/ssl:ro
+      - nginx_logs:/var/log/nginx
     networks:
-      - mcphub_network
+      - mcpserver_network
     depends_on:
-      - mcphub
+      mcpserver:
+        condition: service_healthy
     profiles:
       - nginx
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx:noexec,nosuid,size=100m
+      - /tmp:noexec,nosuid,size=100m
 
-  # 可选：Redis 缓存
+  # Redis 缓存服务
   redis:
     image: redis:7-alpine
-    container_name: mcphub_redis
+    container_name: mcpserver_redis
     restart: unless-stopped
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD:-mcphub123}
+      - redis_logs:/var/log/redis
+    command: >
+      redis-server 
+      --appendonly yes 
+      --requirepass ${REDIS_PASSWORD:-mcpserver123}
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --save 900 1
+      --save 300 10
+      --save 60 10000
     networks:
-      - mcphub_network
+      - mcpserver_network
     profiles:
       - redis
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
 
-  # 可选：PostgreSQL 数据库
+  # PostgreSQL 数据库服务
   postgres:
     image: postgres:15-alpine
-    container_name: mcphub_postgres
+    container_name: mcpserver_postgres
     restart: unless-stopped
     ports:
       - "${POSTGRES_PORT:-5432}:5432"
     environment:
-      - POSTGRES_DB=${POSTGRES_DB:-mcphub}
-      - POSTGRES_USER=${POSTGRES_USER:-mcphub}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mcphub123}
+      - POSTGRES_DB=${POSTGRES_DB:-mcpserver}
+      - POSTGRES_USER=${POSTGRES_USER:-mcpserver}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-mcpserver123}
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8 --lc-collate=C --lc-ctype=C
+      - TZ=${TZ:-Asia/Shanghai}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - postgres_logs:/var/log/postgresql
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
     networks:
-      - mcphub_network
+      - mcpserver_network
     profiles:
       - postgres
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-mcpserver} -d ${POSTGRES_DB:-mcpserver}"]
+    logging: *default-logging
+    security_opt:
+      - no-new-privileges:true
+    read_only: false
+    tmpfs:
+      - /tmp:noexec,nosuid,size=100m
+
+  # 监控服务 (可选)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: mcpserver_prometheus
+    restart: unless-stopped
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    networks:
+      - mcpserver_network
+    profiles:
+      - monitoring
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9090/-/healthy"]
+    logging: *default-logging
+
+  # Grafana 可视化服务 (可选)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: mcpserver_grafana
+    restart: unless-stopped
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin123}
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - mcpserver_network
+    profiles:
+      - monitoring
+    depends_on:
+      - prometheus
+    healthcheck:
+      <<: *default-healthcheck
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+    logging: *default-logging
 
 volumes:
-  mcphub_logs:
+  mcpserver_logs:
+    driver: local
+  nginx_logs:
     driver: local
   redis_data:
     driver: local
+  redis_logs:
+    driver: local
   postgres_data:
+    driver: local
+  postgres_logs:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
     driver: local
 
 networks:
-  mcphub_network:
+  mcpserver_network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: mcpserver_br0
