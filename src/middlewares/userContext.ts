@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import { UserContextService } from '../services/userContextService.js';
+import {
+  UserContextService,
+  asyncLocalStorage,
+} from '../services/userContextService.js';
 import { IUser } from '../types/index.js';
 
 /**
@@ -15,15 +18,10 @@ export const userContextMiddleware = async (
     const currentUser = (req as any).user as IUser;
 
     if (currentUser) {
-      // Set user context
-      const userContextService = UserContextService.getInstance();
-      userContextService.setCurrentUser(currentUser);
-
-      // Clean up user context when response ends
-      res.on('finish', () => {
-        const userContextService = UserContextService.getInstance();
-        userContextService.clearCurrentUser();
+      asyncLocalStorage.run(currentUser, () => {
+        next();
       });
+      return;
     }
 
     next();
@@ -43,38 +41,24 @@ export const sseUserContextMiddleware = async (
   next: NextFunction,
 ): Promise<void> => {
   try {
-    const userContextService = UserContextService.getInstance();
     const username = req.params.user;
 
     if (username) {
       // For user-scoped routes, set the user context
-      // Note: In a real implementation, you should validate the user exists
-      // and has proper permissions
       const user: IUser = {
         username,
         password: '',
         isAdmin: false, // TODO: Should be retrieved from user database
       };
 
-      userContextService.setCurrentUser(user);
-
-      // Clean up user context when response ends
-      res.on('finish', () => {
-        userContextService.clearCurrentUser();
+      asyncLocalStorage.run(user, () => {
+        console.log(`User context set for SSE/MCP endpoint: ${username}`);
+        next();
       });
-
-      // Also clean up on connection close for SSE
-      res.on('close', () => {
-        userContextService.clearCurrentUser();
-      });
-
-      console.log(`User context set for SSE/MCP endpoint: ${username}`);
-    } else {
-      // For global routes, clear user context (admin access)
-      userContextService.clearCurrentUser();
-      console.log('Global SSE/MCP endpoint access - no user context');
+      return;
     }
 
+    console.log('Global SSE/MCP endpoint access - no user context');
     next();
   } catch (error) {
     console.error('Error in SSE user context middleware:', error);
