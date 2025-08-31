@@ -117,9 +117,12 @@ const { token } = await response.json();
 const protectedResponse = await fetch('/api/servers', {
   headers: {
     Authorization: `Bearer ${token}`,
+    'x-auth-token': token,
   },
 });
 ```
+
+令牌可以通过标准的 `Authorization` 头或 `x-auth-token` 头传递。
 
 ### API 密钥认证
 

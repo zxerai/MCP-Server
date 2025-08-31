@@ -176,6 +176,10 @@ curl -X GET http://localhost:3000/api/monitoring/throughput \
 curl -X GET http://localhost:3000/api/monitoring/logs/stream \
   -H "Authorization: Bearer $TOKEN" \
   -H "Accept: text/event-stream"
+# 或使用 x-auth-token 头
+# curl -X GET http://localhost:3000/api/monitoring/logs/stream \\
+#   -H "x-auth-token: $TOKEN" \\
+#   -H "Accept: text/event-stream"
 
 # 过滤日志
 curl -X GET http://localhost:3000/api/monitoring/logs \

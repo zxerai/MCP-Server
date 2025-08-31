@@ -48,49 +48,71 @@ export const useLogs = () => {
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    let eventSource: EventSource | null = null;
+    let abortController: AbortController | null = null;
     let isMounted = true;
 
-    const connectToLogStream = () => {
+    const connectToLogStream = (): void => {
       try {
-        // Close existing connection if any
-        if (eventSource) {
-          eventSource.close();
+        if (abortController) {
+          abortController.abort();
         }
 
-        // Get the authentication token
         const token = getToken();
-        // Connect to SSE endpoint with auth token in URL
-        eventSource = new EventSource(getApiUrl(`/logs/stream?token=${token}`));
+        abortController = new AbortController();
 
-        eventSource.onmessage = (event) => {
-          if (!isMounted) return;
-
-          try {
-            const data = JSON.parse(event.data);
-
-            if (data.type === 'initial') {
-              setLogs(data.logs);
-              setLoading(false);
-            } else if (data.type === 'log') {
-              setLogs((prevLogs) => [...prevLogs, data.log]);
+        fetch(getApiUrl('/logs/stream'), {
+          headers: token
+            ? {
+                Authorization: `Bearer ${token}`,
+                'x-auth-token': token,
+              }
+            : {},
+          signal: abortController.signal,
+        })
+          .then(async (response) => {
+            if (!response.body) {
+              throw new Error('ReadableStream not supported');
             }
-          } catch (err) {
-            console.error('Error parsing SSE message:', err);
-          }
-        };
 
-        eventSource.onerror = () => {
-          if (!isMounted) return;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = '';
 
-          if (eventSource) {
-            eventSource.close();
-            // Attempt to reconnect after a delay
+            while (isMounted) {
+              const { done, value } = await reader.read();
+              if (done) {
+                if (isMounted) {
+                  setTimeout(connectToLogStream, 5000);
+                }
+                break;
+              }
+
+              buffer += decoder.decode(value, { stream: true });
+              let index;
+              while ((index = buffer.indexOf('\n\n')) !== -1) {
+                const message = buffer.slice(0, index);
+                buffer = buffer.slice(index + 2);
+                if (message.startsWith('data:')) {
+                  try {
+                    const data = JSON.parse(message.slice(5).trim());
+                    if (data.type === 'initial') {
+                      setLogs(data.logs);
+                      setLoading(false);
+                    } else if (data.type === 'log') {
+                      setLogs((prevLogs) => [...prevLogs, data.log]);
+                    }
+                  } catch (err) {
+                    console.error('Error parsing SSE message:', err);
+                  }
+                }
+              }
+            }
+          })
+          .catch((err) => {
+            if (!isMounted) return;
+            setError(err instanceof Error ? err : new Error('Failed to connect to log stream'));
             setTimeout(connectToLogStream, 5000);
-          }
-
-          setError(new Error('Connection to log stream lost, attempting to reconnect...'));
-        };
+          });
       } catch (err) {
         if (!isMounted) return;
         setError(err instanceof Error ? err : new Error('Failed to connect to log stream'));
@@ -104,8 +126,8 @@ export const useLogs = () => {
     // Cleanup on unmount
     return () => {
       isMounted = false;
-      if (eventSource) {
-        eventSource.close();
+      if (abortController) {
+        abortController.abort();
       }
     };
   }, []);

@@ -27,6 +27,7 @@ export const authInterceptor: FetchInterceptor = {
 
     const token = getToken();
     if (token) {
+      headers.set('Authorization', `Bearer ${token}`);
       headers.set('x-auth-token', token);
     }
 
