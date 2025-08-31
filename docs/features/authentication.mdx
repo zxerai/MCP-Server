@@ -113,9 +113,14 @@ const { token } = await response.json();
 
 // Use token for authenticated requests
 const serversResponse = await fetch('/api/servers', {
-  headers: { Authorization: `Bearer ${token}` },
+  headers: {
+    Authorization: `Bearer ${token}`,
+    'x-auth-token': token,
+  },
 });
 ```
+
+Tokens can be provided via the standard `Authorization` header or the `x-auth-token` header.
 
 ### API Key Authentication
 
