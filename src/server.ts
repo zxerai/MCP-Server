@@ -48,49 +48,117 @@ export class AppServer {
           console.log('MCP server initialized successfully');
 
           // Original routes (global and group-based)
-          this.app.get(`${this.basePath}/sse/:group?`, sseUserContextMiddleware, (req, res) =>
-            handleSseConnection(req, res),
+          this.app.get(
+            `${this.basePath}/sse/:group?`,
+            sseUserContextMiddleware,
+            async (req, res, next) => {
+              try {
+                await handleSseConnection(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
-          this.app.post(`${this.basePath}/messages`, sseUserContextMiddleware, handleSseMessage);
+          this.app.post(
+            `${this.basePath}/messages`,
+            sseUserContextMiddleware,
+            async (req, res, next) => {
+              try {
+                await handleSseMessage(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
+          );
           this.app.post(
             `${this.basePath}/mcp/:group?`,
             sseUserContextMiddleware,
-            handleMcpPostRequest,
+            async (req, res, next) => {
+              try {
+                await handleMcpPostRequest(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
           this.app.get(
             `${this.basePath}/mcp/:group?`,
             sseUserContextMiddleware,
-            handleMcpOtherRequest,
+            async (req, res, next) => {
+              try {
+                await handleMcpOtherRequest(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
           this.app.delete(
             `${this.basePath}/mcp/:group?`,
             sseUserContextMiddleware,
-            handleMcpOtherRequest,
+            async (req, res, next) => {
+              try {
+                await handleMcpOtherRequest(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
 
           // User-scoped routes with user context middleware
-          this.app.get(`${this.basePath}/:user/sse/:group?`, sseUserContextMiddleware, (req, res) =>
-            handleSseConnection(req, res),
+          this.app.get(
+            `${this.basePath}/:user/sse/:group?`,
+            sseUserContextMiddleware,
+            async (req, res, next) => {
+              try {
+                await handleSseConnection(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
           this.app.post(
             `${this.basePath}/:user/messages`,
             sseUserContextMiddleware,
-            handleSseMessage,
+            async (req, res, next) => {
+              try {
+                await handleSseMessage(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
           this.app.post(
             `${this.basePath}/:user/mcp/:group?`,
             sseUserContextMiddleware,
-            handleMcpPostRequest,
+            async (req, res, next) => {
+              try {
+                await handleMcpPostRequest(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
           this.app.get(
             `${this.basePath}/:user/mcp/:group?`,
             sseUserContextMiddleware,
-            handleMcpOtherRequest,
+            async (req, res, next) => {
+              try {
+                await handleMcpOtherRequest(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
           this.app.delete(
             `${this.basePath}/:user/mcp/:group?`,
             sseUserContextMiddleware,
-            handleMcpOtherRequest,
+            async (req, res, next) => {
+              try {
+                await handleMcpOtherRequest(req, res);
+              } catch (e) {
+                next(e);
+              }
+            },
           );
         })
         .catch((error) => {
