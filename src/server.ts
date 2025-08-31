@@ -36,8 +36,9 @@ export class AppServer {
       await initI18n();
       console.log('i18n initialized successfully');
 
-      // Initialize default admin user if no users exist
+      // Initialize default admin user if no users exist (startup only)
       await initializeDefaultUser();
+      console.log('Default user initialization executed during startup');
 
       initMiddlewares(this.app);
       initRoutes(this.app);
