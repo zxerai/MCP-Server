@@ -3,7 +3,7 @@ import config from './config/index.js';
 import path from 'path';
 import fs from 'fs';
 import { initUpstreamServers, connected } from './services/mcpService.js';
-import { initMiddlewares } from './middlewares/index.js';
+import { initMiddlewares, errorHandler } from './middlewares/index.js';
 import { initRoutes } from './routes/index.js';
 import { initI18n } from './utils/i18n.js';
 import {
@@ -41,6 +41,7 @@ export class AppServer {
 
       initMiddlewares(this.app);
       initRoutes(this.app);
+      this.app.use(errorHandler);
       console.log('Server initialized successfully');
 
       initUpstreamServers()

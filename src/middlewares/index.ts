@@ -68,6 +68,4 @@ export const initMiddlewares = (app: express.Application): void => {
       });
     }
   });
-
-  app.use(errorHandler);
 };
