@@ -125,12 +125,11 @@ export const connected = (): boolean => {
 export const cleanupAllServers = (): void => {
   for (const serverInfo of serverInfos) {
     try {
-      if (serverInfo.client) {
-        serverInfo.client.close();
+      if (serverInfo.keepAliveIntervalId) {
+        clearInterval(serverInfo.keepAliveIntervalId);
+        serverInfo.keepAliveIntervalId = undefined;
       }
-      if (serverInfo.transport) {
-        serverInfo.transport.close();
-      }
+      closeServer(serverInfo.name);
     } catch (error) {
       console.warn(`Error closing server ${serverInfo.name}:`, error);
     }
@@ -139,6 +138,14 @@ export const cleanupAllServers = (): void => {
 
   // Clear session servers as well
   Object.keys(servers).forEach((sessionId) => {
+    const server = servers[sessionId];
+    try {
+      if (server && typeof server.close === 'function') {
+        server.close();
+      }
+    } catch (error) {
+      console.warn(`Error closing session server ${sessionId}:`, error);
+    }
     delete servers[sessionId];
   });
 };
