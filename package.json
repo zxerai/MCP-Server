@@ -73,7 +73,7 @@
     "@radix-ui/react-accordion": "^1.2.3",
     "@radix-ui/react-slot": "^1.1.2",
     "@shadcn/ui": "^0.0.4",
-    "@swc/core": "^1.13.0",
+    "@swc/core": "^1.13.5",
     "@swc/jest": "^0.2.39",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/postcss": "^4.1.3",
